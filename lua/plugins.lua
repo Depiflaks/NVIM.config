@@ -127,12 +127,9 @@ require("lazy").setup({
           ["<A-y>"] = { "accept" },
         },
         completion = {
-          autocomplete = {
-            { "TextChanged", min_len = 1 },
-            { "InsertEnter",  min_len = 1 },
-          },
-          signature = { enabled = true },
+          keyword = {range = 'prefix'}
         },
+        signature = { enabled = true },
         cmdline = {
           enabled = true,
         }
