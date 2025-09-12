@@ -1,5 +1,6 @@
 local opts = { noremap = true, silent = true }
 local map = vim.keymap.set
+local fzf = require 'fzf-lua'
 
 vim.opt.number = true
 vim.opt.relativenumber = true
@@ -35,12 +36,13 @@ map("i", "<A-h>", "<Left>", { noremap = true })
 map("i", "<A-l>", "<Right>", { noremap = true })
 
 -- navigation
-map("n", "<Leader>gd", vim.lsp.buf.definition, opts)
-map("n", "<Leader>gc", vim.lsp.buf.declaration, opts)
-map("n", "<Leader>gi", vim.lsp.buf.implementation, opts)
-map("n", "<Leader>gr", vim.lsp.buf.references, opts)
-map("n", "<Leader>gt", vim.lsp.buf.type_definition, opts)
-map("n", "<Leader>ls", vim.lsp.buf.document_symbol, opts)
+map("n", "gd", fzf.lsp_definitions, opts)
+map("n", "gD", vim.lsp.buf.declaration, opts)
+map("n", "gi", fzf.lsp_implementations, opts)
+map("n", "gr", fzf.lsp_references, { noremap = true, silent = true, nowait = true })
+map("n", "gt", fzf.lsp_typedefs, opts)
+map("n", "<Leader>ls", fzf.lsp_document_symbols, opts)
+map("n", "<Leader>ws", fzf.lsp_workspace_symbols, opts)
 
 -- docs
 map("n", "<Leader>sh", vim.lsp.buf.hover, opts)
@@ -49,8 +51,8 @@ map("n", "<Leader>su", vim.lsp.buf.incoming_calls, opts)
 map("n", "<Leader>so", vim.lsp.buf.outgoing_calls, opts)
 
 -- refactoring
--- map("n", "<Leader>rn", vim.lsp.buf.rename, opts)
-map("n", "<Leader>rr", vim.lsp.buf.code_action, opts)
+map({ 'n', 'x' }, '<leader>ca', vim.lsp.buf.code_action, opts)
+map("n", '<leader>rn', vim.lsp.buf.rename, opts)
 -- map("v", "<Leader>rr", vim.lsp.buf.range_code_action, opts)
 
 -- errors
@@ -61,3 +63,4 @@ map("n", "<Leader>ep", vim.diagnostic.goto_prev, opts)
 -- enter
 map("n", "<S-CR>", "o<Esc>", { noremap = true, silent = true })
 map("n", "<A-CR>", "i<CR><Esc>", { noremap = true, silent = true })
+map("n", "U", "<C-r>", { noremap = true, silent = true })

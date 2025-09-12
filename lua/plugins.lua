@@ -369,11 +369,34 @@ require("lazy").setup({
           },
         },
         filesystem = {
+          follow_current_file = {
+            enabled = true,          -- Включить автоматическое отслеживание текущего файла
+            leave_dirs_open = false, -- Не оставлять директории открытыми после раскрытия
+          },
+          use_libuv_file_watcher = true,
           filtered_items = {
             visible = false, -- when true, they will just be displayed differently than normal items
             hide_dotfiles = false,
             hide_gitignored = false,
             hide_hidden = false, 
+          },
+          window = {
+            mappings = {
+              ["a"] = function(state)
+                local node = state.tree:get_node()
+                local is_directory = node.type == "directory"
+                local path = is_directory and node:get_id() or vim.fn.fnamemodify(node:get_id(), ":h")
+                
+                vim.ui.input({ prompt = "Enter name: " }, function(input)
+                  if not input then return end
+                  
+                  local full_path = path .. "/" .. input
+
+                  vim.cmd("edit " .. full_path)
+                  
+                end)
+              end,
+            },
           },
         },
         buffers = {
@@ -413,6 +436,29 @@ require("lazy").setup({
         open_files_using_relative_paths = false,
         sort_case_insensitive = false,
         sort_function = nil,
+      })
+      vim.api.nvim_create_autocmd("BufNewFile", {
+        pattern = "*.h",
+        callback = function()
+          local filename = vim.fn.expand("%:t")
+          local guard_name = filename:gsub("%.", "_"):upper()
+          local class_name = filename:gsub(".h", "")
+          local guard_lines = {
+            "#ifndef " .. guard_name,
+            "#define " .. guard_name,
+            "",
+            "class " .. class_name,
+            "{ ",
+            "public:",
+            "\t" .. class_name .. "();",
+            "",
+            "private:",
+            "};",
+            "",
+            "#endif /* " .. guard_name .. " */",
+          }
+          vim.api.nvim_buf_set_lines(0, 0, 0, false, guard_lines)
+        end,
       })
     end,
   }

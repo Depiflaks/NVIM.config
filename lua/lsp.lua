@@ -25,7 +25,7 @@ lspconfig.clangd.setup({
     "--cross-file-rename",     
     "--completion-style=detailed",
     "--all-scopes-completion", 
-    "--header-insertion=never",
+    "--header-insertion=iwyu",
     "--compile-commands-dir=build",
   },
 })
