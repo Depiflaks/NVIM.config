@@ -387,14 +387,16 @@ require("lazy").setup({
                 local is_directory = node.type == "directory"
                 local path = is_directory and node:get_id() or vim.fn.fnamemodify(node:get_id(), ":h")
                 
-                vim.ui.input({ prompt = "Enter name: " }, function(input)
-                  if not input then return end
-                  
-                  local full_path = path .. "/" .. input
+                require("neo-tree.ui.inputs").input(
+                  "Enter name: ", "", 
+                  function(input)
+                    if not input then return end
+                    
+                    local full_path = path .. "/" .. input
 
-                  vim.cmd("edit " .. full_path)
-                  
-                end)
+                    vim.cmd("edit " .. full_path)
+                  end
+                )
               end,
             },
           },
@@ -442,23 +444,43 @@ require("lazy").setup({
         callback = function()
           local filename = vim.fn.expand("%:t")
           local guard_name = filename:gsub("%.", "_"):upper()
-          local class_name = filename:gsub(".h", "")
+          local class_name = filename:gsub("%.h", "")
           local guard_lines = {
             "#ifndef " .. guard_name,
             "#define " .. guard_name,
             "",
-            "class " .. class_name,
-            "{ ",
-            "public:",
-            "\t" .. class_name .. "();",
-            "",
-            "private:",
-            "};",
-            "",
             "#endif /* " .. guard_name .. " */",
           }
           vim.api.nvim_buf_set_lines(0, 0, 0, false, guard_lines)
+          vim.cmd("w")
+
+          -- require("neo-tree.sources.manager").refresh("filesystem")
+          -- vim.defer_fn(function()
+          --   require("neo-tree.command").execute({ action = "focus", source = "filesystem" })
+          --   local tree = require("neo-tree.sources.manager").get_state("filesystem")
+          --   if tree then
+          --     require("neo-tree.ui.renderer").focus_node(tree, full_path, false)
+          --   end
+          -- end, 50)
         end,
+      })
+      vim.api.nvim_create_autocmd({"BufEnter", "VimEnter", "WinEnter"}, {
+      pattern = "*",
+      callback = function()
+        local current_buf = vim.api.nvim_get_current_buf()
+        local current_file = vim.api.nvim_buf_get_name(current_buf)
+        if current_file ~= "" and vim.fn.isdirectory(current_file) == 0 then
+          vim.defer_fn(function()
+            local tree_exists = pcall(require, "neo-tree.sources.manager")
+            if tree_exists then
+              local state = require("neo-tree.sources.manager").get_state("filesystem")
+              if state and state.name == "filesystem" and state.path then
+                require("neo-tree.ui.renderer").focus_node(state, current_file, false)
+              end
+            end
+          end, 100)
+        end
+      end
       })
     end,
   }

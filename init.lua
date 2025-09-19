@@ -25,8 +25,11 @@ vim.o.listchars = "tab:→ ,trail:·,extends:»,precedes:«"
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 
-require("plugins")
+vim.opt.showbreak = "↪"
+vim.opt.breakindent = true
+vim.opt.breakindentopt = "shift:2"
 
+require("plugins")
 require("lsp")
 require("keymaps")
 require("fzf")
